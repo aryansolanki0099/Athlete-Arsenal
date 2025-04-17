@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Content - {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'course_list' %}">Courses</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'course_detail' module.course.id %}">{{ module.course.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'manage_modules' module.course.id %}">Manage Modules</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'manage_content' module.id %}">{{ module.title }}</a></li>
+            <li class="breadcrumb-item active">Add Content</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-plus-circle"></i> Add New Content</h3>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Please correct the following errors:</h5>
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Content Title</label>
+                            {{ form.title }}
+                            {% if form.title.help_text %}
+                            <div class="form-text">{{ form.title.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.content_type.id_for_label }}" class="form-label">Content Type</label>
+                            {{ form.content_type }}
+                            <div class="form-text">Choose the type of content you want to add.</div>
+                        </div>
+
+                        <div id="videoContent" class="mb-3" style="display: none;">
+                            <label for="{{ form.video.id_for_label }}" class="form-label">Video File</label>
+                            {{ form.video }}
+                            <div class="form-text">Upload your video file (MP4 format recommended).</div>
+                        </div>
+
+                        <div id="textContent" class="mb-3" style="display: none;">
+                            <label for="{{ form.text_content.id_for_label }}" class="form-label">Text Content</label>
+                            {{ form.text_content }}
+                            <div class="form-text">Enter your text content here. You can use markdown for formatting.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.order.id_for_label }}" class="form-label">Content Order</label>
+                            {{ form.order }}
+                            <div class="form-text">This determines the order in which content appears in the module.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create Content
+                            </button>
+                            <a href="{% url 'manage_content' module.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Content Creation Guide -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Content Creation Guide</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6><i class="fas fa-video text-success"></i> Video Content Tips:</h6>
+                        <ul class="text-muted">
+                            <li>Keep videos concise (5-15 minutes)</li>
+                            <li>Ensure good audio and video quality</li>
+                            <li>Use MP4 format for best compatibility</li>
+                            <li>Include captions when possible</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6><i class="fas fa-file-alt text-success"></i> Text Content Tips:</h6>
+                        <ul class="text-muted">
+                            <li>Use clear headings and sections</li>
+                            <li>Include examples and code snippets</li>
+                            <li>Add images or diagrams when helpful</li>
+                            <li>Keep paragraphs short and focused</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contentTypeSelect = document.getElementById('{{ form.content_type.id_for_label }}');
+    const videoContent = document.getElementById('videoContent');
+    const textContent = document.getElementById('textContent');
+
+    function updateContentFields() {
+        const selectedType = contentTypeSelect.value;
+        if (selectedType === 'VIDEO') {
+            videoContent.style.display = 'block';
+            textContent.style.display = 'none';
+        } else if (selectedType === 'TEXT') {
+            videoContent.style.display = 'none';
+            textContent.style.display = 'block';
+        }
+    }
+
+    contentTypeSelect.addEventListener('change', updateContentFields);
+    updateContentFields(); // Initial state
+});
+</script>
+{% endblock %}
+{% endblock %}

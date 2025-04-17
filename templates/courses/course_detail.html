@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Course Details -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h1 class="card-title h2">{{ course.title }}</h1>
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-user"></i> {{ course.instructor.get_full_name }}
+                    </p>
+                    <div class="mb-4">
+                        {{ course.description|linebreaks }}
+                    </div>
+                    
+                    {% if has_access %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> You have full access to this course.
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="#modules" class="btn btn-primary">
+                                <i class="fas fa-book-reader"></i> Start Learning
+                            </a>
+                        </div>
+                    {% else %}
+                        {% if user.is_authenticated %}
+                            {% if pending_order %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-clock"></i> You have a pending order for this course.
+                                    <a href="{% url 'course_payment_process' pending_order.id %}" class="alert-link">Complete your payment</a>
+                                </div>
+                            {% else %}
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'purchase_course' course.pk %}" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-shopping-cart"></i> Purchase Course - ₹{{ course.price }}
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Please login to purchase this course.
+                            </div>
+                            <div class="d-grid">
+                                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt"></i> Login to Purchase
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if has_access %}
+                <!-- Course Modules -->
+                <div id="modules">
+                    <h2 class="h4 mb-3">Course Content</h2>
+                    {% for module in course.modules.all %}
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">{{ module.title }}</h5>
+                            </div>
+                            {% if module.description %}
+                                <div class="card-body">
+                                    <p class="card-text">{{ module.description }}</p>
+                                </div>
+                            {% endif %}
+                            {% if module.contents.exists %}
+                                <ul class="list-group list-group-flush">
+                                    {% for content in module.contents.all %}
+                                        <li class="list-group-item">
+                                            <a href="{% url 'view_content' content.id %}" class="text-decoration-none text-dark d-flex align-items-center">
+                                                <i class="fas {% if content.content_type == 'VIDEO' %}fa-video{% else %}fa-file-alt{% endif %} me-2"></i>
+                                                {{ content.title }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No modules available yet.
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Price Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Course Price</h5>
+                    <h2 class="text-primary mb-4">₹{{ course.price }}</h2>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2">
+                            <i class="fas fa-infinity text-success me-2"></i> Lifetime Access
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-certificate text-success me-2"></i> Certificate of Completion
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-mobile-alt text-success me-2"></i> Access on Mobile and TV
+                        </li>
+                    </ul>
+                    {% if not has_access and user.is_authenticated and not pending_order %}
+                        <div class="d-grid">
+                            <a href="{% url 'purchase_course' course.pk %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-shopping-cart"></i> Purchase Now
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Instructor Card -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">About the Instructor</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-primary text-white p-3">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ course.instructor.get_full_name }}</h6>
+                            <small class="text-muted">Course Instructor</small>
+                        </div>
+                    </div>
+                    {% if course.instructor.profile.bio %}
+                        <p class="card-text">{{ course.instructor.profile.bio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

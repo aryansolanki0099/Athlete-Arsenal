@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Content - {{ content.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'course_list' %}">Courses</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'course_detail' module.course.id %}">{{ module.course.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'manage_modules' module.course.id %}">Manage Modules</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'manage_content' module.id %}">{{ module.title }}</a></li>
+            <li class="breadcrumb-item active">Edit Content</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-edit"></i> Edit Content</h3>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Please correct the following errors:</h5>
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Content Title</label>
+                            {{ form.title }}
+                            {% if form.title.help_text %}
+                            <div class="form-text">{{ form.title.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Content Type</label>
+                            <input type="text" class="form-control" value="{{ content.get_content_type_display }}" readonly>
+                            {{ form.content_type.as_hidden }}
+                        </div>
+
+                        {% if content.content_type == 'VIDEO' %}
+                        <div class="mb-3">
+                            <label for="{{ form.video.id_for_label }}" class="form-label">Video File</label>
+                            {% if content.video %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Current video: {{ content.video.name }}
+                            </div>
+                            {% endif %}
+                            {{ form.video }}
+                            <div class="form-text">Upload a new video file to replace the current one.</div>
+                        </div>
+                        {% else %}
+                        <div class="mb-3">
+                            <label for="{{ form.text_content.id_for_label }}" class="form-label">Text Content</label>
+                            {{ form.text_content }}
+                            <div class="form-text">Edit your text content here. You can use markdown for formatting.</div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.order.id_for_label }}" class="form-label">Content Order</label>
+                            {{ form.order }}
+                            <div class="form-text">This determines the order in which content appears in the module.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a href="{% url 'manage_content' module.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Content Guidelines -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Content Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    {% if content.content_type == 'VIDEO' %}
+                    <div class="mb-4">
+                        <h6><i class="fas fa-video text-success"></i> Video Content Best Practices:</h6>
+                        <ul class="text-muted">
+                            <li>Keep videos concise and focused</li>
+                            <li>Ensure good audio and video quality</li>
+                            <li>Use MP4 format for best compatibility</li>
+                            <li>Consider adding captions for accessibility</li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="mb-4">
+                        <h6><i class="fas fa-file-alt text-success"></i> Text Content Best Practices:</h6>
+                        <ul class="text-muted">
+                            <li>Use clear headings and sections</li>
+                            <li>Include examples and code snippets</li>
+                            <li>Add images or diagrams when helpful</li>
+                            <li>Keep paragraphs short and focused</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong>
+                        <ul class="mb-0">
+                            <li>Review your content before saving changes</li>
+                            <li>Ensure all links and resources are working</li>
+                            <li>Check for any formatting issues</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

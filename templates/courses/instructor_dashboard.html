@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Instructor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Side Menu -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Instructor Menu</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'profile' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-circle"></i> Profile
+                    </a>
+                    <a href="{% url 'instructor_dashboard' %}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                    <a href="{% url 'add_course' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-plus-circle"></i> Add Course
+                    </a>
+                    <a href="{% url 'my_created_courses' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-book"></i> My Courses
+                        <span class="badge bg-primary float-end">{{ user.course_set.count }}</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Quick Stats</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>Total Courses</div>
+                            <span class="badge bg-primary">{{ user.course_set.count }}</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>Total Students</div>
+                            <span class="badge bg-success">{{ total_students }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- Add Course Button -->
+            <div class="mb-4">
+                <a href="{% url 'add_course' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Create New Course
+                </a>
+            </div>
+            
+            <!-- My Courses -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> My Courses</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.course_set.all %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Students</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in user.course_set.all %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'course_detail' course.id %}" class="text-decoration-none">
+                                                {{ course.title }}
+                                            </a>
+                                        </td>
+                                        <td>{{ course.enrollment_set.count }}</td>
+                                        <td>₹{{ course.price }}</td>
+                                        <td>
+                                            <span class="badge bg-success">Active</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'edit_course' course.id %}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="{% url 'manage_modules' course.id %}" 
+                                                   class="btn btn-sm btn-info">
+                                                    <i class="fas fa-tasks"></i> Modules
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-danger" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteCourseModal{{ course.id }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Delete Course Modal -->
+                                            <div class="modal fade" id="deleteCourseModal{{ course.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Delete Course</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Are you sure you want to delete "{{ course.title }}"?</p>
+                                                            <p class="text-danger">This action cannot be undone!</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <form action="{% url 'delete_course' course.id %}" method="POST" class="d-inline">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-danger">Delete Course</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                            <h4>No Courses Yet</h4>
+                            <p class="text-muted">Start creating your first course to share your knowledge!</p>
+                            <a href="{% url 'add_course' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus-circle"></i> Create Your First Course
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

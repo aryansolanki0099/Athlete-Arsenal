@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">{{ title }}</h1>
+
+    {% if courses %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for course in courses %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        {% if course.thumbnail %}
+                            <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+                        {% else %}
+                            <div class="card-img-top bg-light text-center py-5">
+                                <i class="fas fa-graduation-cap fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ course.title }}</h5>
+                            <p class="card-text text-muted">
+                                <small>
+                                    <i class="fas fa-user"></i> {{ course.instructor.get_full_name }}
+                                </small>
+                            </p>
+                            <p class="card-text">{{ course.description|truncatewords:30 }}</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid">
+                                <a href="{% url 'course_detail' course.id %}" class="btn btn-primary">
+                                    <i class="fas fa-book-reader"></i> View Course
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            {% if request.path == '/courses/my-courses/' %}
+                <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
+                <h3 class="text-muted">You haven't enrolled in any courses yet.</h3>
+                <p class="text-muted mb-4">Browse our courses and start learning today!</p>
+                <a href="{% url 'course_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search"></i> Browse Courses
+                </a>
+            {% else %}
+                <i class="fas fa-chalkboard-teacher fa-4x text-muted mb-3"></i>
+                <h3 class="text-muted">You haven't created any courses yet.</h3>
+                <p class="text-muted mb-4">Share your knowledge by creating your first course!</p>
+                <a href="{% url 'add_course' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> Create Course
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

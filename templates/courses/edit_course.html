@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Course - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Edit Course</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Course Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ course.title }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Course Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" required>{{ course.description }}</textarea>
+                            <div class="form-text">Provide a detailed description of what students will learn.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price (₹)</label>
+                            <input type="number" class="form-control" id="price" name="price" min="0" step="0.01" value="{{ course.price }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="thumbnail" class="form-label">Course Thumbnail</label>
+                            {% if course.thumbnail %}
+                            <div class="mb-2">
+                                <img src="{{ course.thumbnail.url }}" alt="Current thumbnail" class="img-thumbnail" style="max-width: 200px;">
+                                <p class="form-text">Current thumbnail</p>
+                            </div>
+                            {% endif %}
+                            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*">
+                            <div class="form-text">Leave empty to keep current thumbnail. Recommended size: 1280x720 pixels</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a href="{% url 'course_detail' course.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Preview thumbnail image before upload
+document.getElementById('thumbnail').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.createElement('img');
+            preview.src = e.target.result;
+            preview.style.maxWidth = '200px';
+            preview.style.marginTop = '10px';
+            preview.className = 'img-thumbnail';
+            
+            const existingPreview = document.querySelector('.img-thumbnail');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+            
+            document.getElementById('thumbnail').parentNode.appendChild(preview);
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}
